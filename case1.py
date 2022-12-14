@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import rosen, differential_evolution
+from scipy.optimize import differential_evolution
 
 popsize = 13
 power_target = 2520
@@ -45,12 +45,12 @@ def objective(x):
     sum = 0
     for i in range(popsize):
         sum += (
-            a[i] * x[i]**2
+            a[i] * x[i] ** 2
             + b[i] * x[i]
             + c[i]
             + np.abs(e[i] * np.sin(f[i] * (Pmin[i] - x[i])))
         )
-    return sum - power_target
+    return np.abs(sum - power_target)
 
 
 bounds = []
@@ -58,6 +58,15 @@ for i in range(popsize):
     bounds.append((Pmin[i], Pmax[i]))
 
 # print(bounds)
-
-results = differential_evolution(objective, bounds, popsize=popsize, polish=False)
-print(results)
+for i in range(5):
+    results = differential_evolution(
+        objective,
+        bounds,
+        popsize=popsize,
+        polish=False,
+        mutation=0.91,
+        recombination=0.7,
+        tol=0.0005,
+        strategy="currenttobest1exp",
+    )
+    print("resultado: {}, iteracoes: {}".format(results.fun, results.nit))
