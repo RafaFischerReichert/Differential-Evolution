@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import differential_evolution
+from scipy.optimize import differential_evolution, NonlinearConstraint
 
 popsize = 13
 power_target = 2520
@@ -43,18 +43,27 @@ f = [
 
 def objective(x):
     sum = 0
-    for i in range(popsize):
+    for i in range(len(x)):
         sum += (
             a[i] * x[i] ** 2
             + b[i] * x[i]
             + c[i]
             + np.abs(e[i] * np.sin(f[i] * (Pmin[i] - x[i])))
         )
-    return np.abs(sum - power_target)
+    return sum
 
+
+def constraint(x):
+    sum = 0
+    for i in range(len(x)):
+        sum += x[i]
+    return sum - power_target
+
+
+c = NonlinearConstraint(constraint, -0.01, 0.01)
 
 bounds = []
-for i in range(popsize):
+for i in range(len(a)):
     bounds.append((Pmin[i], Pmax[i]))
 
 # print(bounds)
@@ -67,6 +76,7 @@ for i in range(5):
         mutation=0.91,
         recombination=0.7,
         tol=0.0005,
+        constraints=(c),
         strategy="currenttobest1exp",
     )
     print("resultado: {}, iteracoes: {}".format(results.fun, results.nit))
